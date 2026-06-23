@@ -44,11 +44,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./nexora-backend
-          dockerfile: ./nexora-backend/Dockerfile
+          file: ./nexora-backend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-backend:cache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-backend:cache,mode=max
 
       # Chatbot — only builds if chatbot files changed
       - name: Build & push chatbot image
@@ -56,11 +54,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./nexora-backend/chatbot
-          dockerfile: ./nexora-backend/chatbot/Dockerfile
+          file: ./nexora-backend/chatbot/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:cache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:cache,mode=max
 
       # Frontend — only builds if nexora-frontend files changed
       - name: Build & push frontend image
@@ -68,11 +64,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./nexora-frontend
-          dockerfile: ./nexora-frontend/Dockerfile
+          file: ./nexora-frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-frontend:cache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-frontend:cache,mode=max
 
   # ── Job 2: Deploy to EC2 (only runs after build succeeds) ──
   deploy:
@@ -89,14 +83,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/nexora
-
-            # Pull latest images for all services
             docker compose pull
-
-            # Restart only containers whose image changed, zero downtime
             docker compose up -d --no-deps --force-recreate backend chatbot frontend
-
-            # Clean up old dangling images to save disk space
             docker image prune -f
 
       - name: Verify containers are running
