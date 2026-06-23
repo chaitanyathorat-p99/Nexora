@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+
 jobs:
   # ── Job 1: Build & push all Docker images ──────────────────
   build:
@@ -38,13 +41,6 @@ jobs:
             frontend:
               - 'nexora-frontend/**'
 
-      # Expose DOCKER_USERNAME as an env var for reliable interpolation in tags
-      - name: Set image tag env vars
-        run: |
-          echo "BACKEND_TAG=${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest" >> $GITHUB_ENV
-          echo "CHATBOT_TAG=${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest" >> $GITHUB_ENV
-          echo "FRONTEND_TAG=${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest" >> $GITHUB_ENV
-
       # Backend — only builds if nexora-backend files changed
       - name: Build & push backend image
         if: steps.changes.outputs.backend == 'true'
@@ -53,7 +49,7 @@ jobs:
           context: ./nexora-backend
           file: ./nexora-backend/Dockerfile
           push: true
-          tags: ${{ env.BACKEND_TAG }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest
 
       # Chatbot — only builds if chatbot files changed
       - name: Build & push chatbot image
@@ -63,7 +59,7 @@ jobs:
           context: ./nexora-backend/chatbot
           file: ./nexora-backend/chatbot/Dockerfile
           push: true
-          tags: ${{ env.CHATBOT_TAG }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest
 
       # Frontend — only builds if nexora-frontend files changed
       - name: Build & push frontend image
@@ -73,7 +69,7 @@ jobs:
           context: ./nexora-frontend
           file: ./nexora-frontend/Dockerfile
           push: true
-          tags: ${{ env.FRONTEND_TAG }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest
 
   # ── Job 2: Deploy to EC2 (only runs after build succeeds) ──
   deploy:
@@ -103,7 +99,6 @@ jobs:
           script: |
             echo "=== Running containers ==="
             docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-
             echo "=== Health checks ==="
             curl -sf http://localhost:8000 && echo "✅ Backend OK" || echo "❌ Backend FAILED"
             curl -sf http://localhost:8001/health && echo "✅ Chatbot OK" || echo "❌ Chatbot FAILED"
