@@ -1,0 +1,8 @@
+node_modules
+.git
+.github
+tests
+.env
+chatbot/__pycache__
+chatbot/.venv
+chatbot/extracted_images

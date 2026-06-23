@@ -1,0 +1,43 @@
+// Products used in Product module + deal/quotation product pickers
+
+export const mockProducts = [
+  {
+    _id: "product_3001",
+    name: "CRM Starter",
+    productType: "Software",
+    priceType: "OneTime",
+    price: 50000,
+    discount: 10,
+    quantity: 1,
+    subscriptionCycle: 0,
+    billingCycle: 0,
+    createdAt: "2026-03-01T09:00:00.000Z",
+    updatedAt: "2026-03-01T09:00:00.000Z",
+  },
+  {
+    _id: "product_3002",
+    name: "Analytics Pro",
+    productType: "Software",
+    priceType: "Subscription",
+    price: 1000,
+    discount: 5,
+    quantity: 1,
+    subscriptionCycle: 12,
+    billingCycle: 12,
+    createdAt: "2026-03-05T09:00:00.000Z",
+    updatedAt: "2026-03-05T09:00:00.000Z",
+  },
+  {
+    _id: "product_3003",
+    name: "Implementation Support",
+    productType: "Service",
+    priceType: "OneTime",
+    price: 2000,
+    discount: 0,
+    quantity: 1,
+    subscriptionCycle: 0,
+    billingCycle: 0,
+    createdAt: "2026-03-07T09:00:00.000Z",
+    updatedAt: "2026-03-07T09:00:00.000Z",
+  },
+];

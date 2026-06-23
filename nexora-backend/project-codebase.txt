@@ -1,0 +1,513 @@
+================================================================
+NEXORA BACKEND - FULL CODEBASE
+================================================================
+Stack: Node.js (ES Modules), Express v5, MongoDB/Mongoose, JWT
+================================================================
+
+----------------------------------------------------------------
+FILE: package.json
+----------------------------------------------------------------
+{
+  "name": "nexora-backend",
+  "version": "1.0.0",
+  "description": "Nexora Backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.0.0",
+    "multer": "^2.1.1",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
+
+----------------------------------------------------------------
+FILE: server.js
+----------------------------------------------------------------
+import app from './src/app.js';
+
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+----------------------------------------------------------------
+FILE: src/app.js
+----------------------------------------------------------------
+import express from 'express';
+import connectDB from './config/db.js';
+import authRoutes from './modules/auth/auth.routes.js';
+import { errorHandler } from './middlewares/error.middleware.js';
+
+const app = express();
+
+// Middlewares
+app.use(express.json());
+
+// DB Connection
+connectDB();
+
+// Routes
+app.get("/", (req, res) => {
+  res.send("API Running");
+});
+
+app.use("/api/auth", authRoutes);
+
+// Global error handler
+app.use(errorHandler);
+
+export default app;
+
+----------------------------------------------------------------
+FILE: src/config/db.js
+----------------------------------------------------------------
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
+
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_DB_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error(`MongoDB connection error: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+export default connectDB;
+
+----------------------------------------------------------------
+FILE: .env (structure only - no real secrets)
+----------------------------------------------------------------
+PORT=8000
+MONGO_DB_URI=mongodb+srv://<user>:<password>@<cluster>/?appName=Nexora-backend
+JWT_SECRET=<your_secret>
+NODE_ENV=development
+
+----------------------------------------------------------------
+FILE: src/middlewares/auth.middleware.js
+----------------------------------------------------------------
+import jwt from "jsonwebtoken";
+import User from "../modules/user/user.model.js";
+
+const protect = async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select("-password");
+      return next();
+    } catch (error) {
+      return res.status(401).json({
+        message: "Not authorized, token failed",
+      });
+    }
+  }
+
+  return res.status(401).json({
+    message: "Not authorized, no token",
+  });
+};
+
+export default protect;
+
+----------------------------------------------------------------
+FILE: src/middlewares/role.middleware.js
+----------------------------------------------------------------
+const role = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+    next();
+  };
+};
+
+export default role;
+
+----------------------------------------------------------------
+FILE: src/middlewares/error.middleware.js
+----------------------------------------------------------------
+import ApiError from "../utils/ApiError.js";
+import logger from '../utils/logger.js';
+
+export const errorHandler = (err, req, res, next) => {
+  let { statusCode, message } = err;
+
+  if (!(err instanceof ApiError)) {
+    statusCode = 500;
+    message = "Internal Server Error";
+  }
+
+  console.error(`[ERROR] ${req.method} ${req.url} : ${err.message}`);
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+    data: null,
+    error: process.env.NODE_ENV === 'development' ? err.stack : null,
+  });
+};
+
+----------------------------------------------------------------
+FILE: src/utils/ApiError.js
+----------------------------------------------------------------
+export default class ApiError extends Error {
+  constructor(statusCode, message, stack = "") {
+    super(message);
+    this.statusCode = statusCode;
+
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+}
+
+----------------------------------------------------------------
+FILE: src/utils/ApiResponse.js
+----------------------------------------------------------------
+class ApiResponse {
+  constructor(statusCode, data, message = "Success") {
+    this.statusCode = statusCode;
+    this.data = data;
+    this.message = message;
+    this.success = statusCode < 400;
+  }
+}
+
+export default ApiResponse;
+
+----------------------------------------------------------------
+FILE: src/utils/logger.js
+----------------------------------------------------------------
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
+  ],
+});
+
+logger.log("info", "logging message");
+
+export default logger;
+
+----------------------------------------------------------------
+FILE: src/utils/generateToken.js
+----------------------------------------------------------------
+// EMPTY - jwt.sign is currently done inline in auth.service.js
+
+----------------------------------------------------------------
+FILE: src/modules/user/user.model.js
+----------------------------------------------------------------
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    fullName:   { type: String, required: true, trim: true },
+    email:      { type: String, required: true, unique: true, trim: true, lowercase: true },
+    password:   { type: String, required: true },
+    role:       { type: String, enum: ["super_admin", "admin", "employee"], default: "employee" },
+    department: { type: String, default: "" },
+    phone:      { type: String, default: "" },
+    isActive:   { type: Boolean, default: true }
+  },
+  { timestamps: true }
+);
+
+const User = mongoose.model("User", userSchema);
+export default User;
+
+----------------------------------------------------------------
+FILE: src/modules/auth/auth.routes.js
+----------------------------------------------------------------
+import express from "express";
+import { register, login, getProfile } from "./auth.controller.js";
+import protect from "../../middlewares/auth.middleware.js";
+import role from "../../middlewares/role.middleware.js";
+
+const router = express.Router();
+
+router.post("/register", register);
+router.post("/login", login);
+router.get("/profile", protect, getProfile);
+router.get("/admin-only", protect, role(["admin", "super_admin"]), (req, res) => {
+  res.json({ message: "Welcome Admin" });
+});
+
+export default router;
+
+----------------------------------------------------------------
+FILE: src/modules/auth/auth.controller.js
+----------------------------------------------------------------
+import { registerUser, loginUser } from "./auth.service.js";
+
+export const register = async (req, res) => {
+  try {
+    const user = await registerUser(req.body);
+    res.status(201).json({ success: true, message: "User registered successfully", data: user });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const result = await loginUser(email, password);
+    res.status(200).json({ success: true, message: "Login successful", token: result.token, user: result.user });
+  } catch (error) {
+    res.status(401).json({ success: false, message: error.message });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    res.status(200).json({ success: true, message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    res.status(200).json({ success: true, user: req.user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+----------------------------------------------------------------
+FILE: src/modules/auth/auth.service.js
+----------------------------------------------------------------
+import User from "../user/user.model.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+export const registerUser = async (userData) => {
+  const { fullName, email, password, role, department, phone } = userData;
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) throw new Error("User already exists with this email");
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await User.create({ fullName, email, password: hashedPassword, role, department, phone });
+
+  return {
+    _id: user._id, fullName: user.fullName, email: user.email,
+    role: user.role, department: user.department, phone: user.phone
+  };
+};
+
+export const loginUser = async (email, password) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Invalid email or password");
+
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  if (!isPasswordMatch) throw new Error("Invalid email or password");
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return {
+    token,
+    user: {
+      _id: user._id, fullName: user.fullName, email: user.email,
+      role: user.role, department: user.department, phone: user.phone
+    }
+  };
+};
+
+----------------------------------------------------------------
+FILE: src/modules/auth/auth.validation.js
+----------------------------------------------------------------
+// BUG: This file incorrectly contains a copy of user.model.js
+// It should contain Zod validation schemas for auth routes
+// Currently not imported anywhere so it does not affect runtime
+
+----------------------------------------------------------------
+FILE: src/modules/lead/lead.model.js
+----------------------------------------------------------------
+import mongoose from "mongoose";
+
+const leadSchema = new mongoose.Schema(
+  {
+    firstName:    { type: String, required: true, trim: true },
+    lastName:     { type: String, required: true, trim: true },
+    email:        { type: String, required: true, unique: true, trim: true, lowercase: true },
+    leadValue:    { type: Number, default: 0 },
+    leadWeight:   { type: String, enum: ["Hot", "Warm", "Cold"], default: "Cold" },
+    mobile:       { type: String, required: true, trim: true },
+    address:      { type: String, trim: true },
+    city:         { type: String, trim: true },
+    state:        { type: String, trim: true },
+    country:      { type: String, default: "India", trim: true },
+    typeOfBuyer:  { type: String, trim: true },
+    industryType: { type: String, trim: true },
+    source:       { type: String, trim: true },
+    status: {
+      type: String,
+      enum: ["New Leads", "Contacted", "Qualified", "Lost", "Converted"],
+      default: "New Leads"
+    },
+    assignedTo: { type: String, trim: true }
+  },
+  { timestamps: true }
+);
+
+const Lead = mongoose.model("Lead", leadSchema);
+export default Lead;
+
+----------------------------------------------------------------
+FILE: src/modules/lead/lead.routes.js
+----------------------------------------------------------------
+// BUG: Uses CommonJS (require/module.exports) — project is ESM ("type":"module")
+// Needs to be rewritten with import/export before mounting in app.js
+
+const express = require("express");
+const router = express.Router();
+const controller = require("./lead.controller");
+
+router.post("/", controller.createLead);
+router.get("/", controller.getLeads);
+router.get("/:id", controller.getLeadById);
+router.put("/:id", controller.updateLead);
+router.delete("/:id", controller.deleteLead);
+
+module.exports = router;
+
+----------------------------------------------------------------
+FILE: src/modules/lead/lead.controller.js
+----------------------------------------------------------------
+// BUG: Uses CommonJS — needs ESM conversion
+// Also: getLeadById is defined twice (duplicate)
+
+const leadService = require("./lead.service");
+
+exports.createLead = async (req, res) => {
+  try {
+    const lead = await leadService.createLead(req.body);
+    res.status(201).json({ success: true, message: "Lead created successfully", data: lead });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getLeads = async (req, res) => {
+  try {
+    const leads = await leadService.getLeads();
+    res.status(200).json({ success: true, data: leads });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getLeadById = async (req, res) => {
+  try {
+    const lead = await leadService.getLeadById(req.params.id);
+    res.status(200).json({ success: true, data: lead });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateLead = async (req, res) => {
+  try {
+    const lead = await leadService.updateLead(req.params.id, req.body);
+    res.status(200).json({ success: true, message: "Lead updated successfully", data: lead });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteLead = async (req, res) => {
+  try {
+    await leadService.deleteLead(req.params.id);
+    res.status(200).json({ success: true, message: "Lead deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+----------------------------------------------------------------
+FILE: src/modules/lead/lead.service.js
+----------------------------------------------------------------
+// BUG: Uses CommonJS — needs ESM conversion
+
+const Lead = require("./lead.model");
+
+exports.createLead  = async (data)     => await Lead.create(data);
+exports.getLeads    = async ()         => await Lead.find().sort({ createdAt: -1 });
+exports.getLeadById = async (id)       => await Lead.findById(id);
+exports.updateLead  = async (id, data) => await Lead.findByIdAndUpdate(id, data, { new: true });
+exports.deleteLead  = async (id)       => await Lead.findByIdAndDelete(id);
+
+----------------------------------------------------------------
+FILE: src/modules/lead/lead.validation.js
+----------------------------------------------------------------
+// EMPTY - not yet implemented
+
+================================================================
+KNOWN ISSUES SUMMARY
+================================================================
+1. lead.routes.js, lead.controller.js, lead.service.js — all use
+   CommonJS (require/module.exports). Project is "type":"module".
+   These must be converted to ESM before being mounted in app.js.
+
+2. lead module is NOT mounted in app.js yet.
+
+3. auth.validation.js — contains a copy of user.model.js instead
+   of actual Zod validation schemas. Not imported anywhere.
+
+4. lead.validation.js — empty, not implemented.
+
+5. generateToken.js — empty. JWT signing is done inline in auth.service.js.
+
+6. ApiError and ApiResponse utils exist but controllers use raw
+   res.json() instead — inconsistent error/response handling.
+
+7. lead.controller.js — getLeadById is defined twice (duplicate export).
+
+================================================================

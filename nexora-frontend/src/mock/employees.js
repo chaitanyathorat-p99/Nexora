@@ -1,0 +1,47 @@
+// This project calls these records via `/users` endpoints.
+// Keep fields aligned with existing tables/forms (username, email, mobileNo, isActive, userType, etc.)
+
+export const mockEmployees = [
+  {
+    _id: "user_super_admin_1",
+    userType: "System",
+    username: "superadmin",
+    name: "Super Admin",
+    email: "superadmin@mock.local",
+    mobileNo: "+91-90000-00001",
+    role: "role_super_admin",
+    isActive: true,
+    taskKanban: false,
+    profilePic: "",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
+  },
+  {
+    _id: "user_company_owner_1",
+    userType: "System",
+    username: "owneradmin",
+    name: "Company Owner",
+    email: "owneradmin@mock.local",
+    mobileNo: "+91-90000-00002",
+    role: "role_company_owner",
+    isActive: true,
+    taskKanban: false,
+    profilePic: "",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 25).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+  },
+  {
+    _id: "user_employee_1",
+    userType: "System",
+    username: "employee1",
+    name: "Employee User",
+    email: "employee1@mock.local",
+    mobileNo: "+91-90000-00003",
+    role: "role_employee",
+    isActive: true,
+    taskKanban: false,
+    profilePic: "",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+  },
+];

@@ -1,0 +1,8 @@
+.lead-profile-card .ant-card-body{
+position: sticky;
+top: 40px;
+}
+
+.ant-card-body--p0 .ant-card-body{
+    padding: 0px!important;
+}

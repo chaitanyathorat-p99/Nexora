@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@source "../index.html";
+@source "./**/*.{js,jsx,ts,tsx}";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* Shared alignment for selected feature list pages */
+.feature-table-layout {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media screen and (max-width: 768px) {
+  .feature-table-layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+

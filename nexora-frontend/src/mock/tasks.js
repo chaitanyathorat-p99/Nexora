@@ -1,0 +1,40 @@
+// Tasks used in Task list + Kanban
+
+export const mockTasks = [
+  {
+    _id: "task_5001",
+    title: "Call lead and qualify requirements",
+    description: "Initial qualification call for CRM requirements.",
+    lead: "lead_1001",
+    assignedTo: "user_sys_2",
+    dueDate: "2026-04-25T00:00:00.000Z",
+    taskStages: "To Do",
+    priority: "High",
+    createdAt: "2026-04-10T09:30:00.000Z",
+    updatedAt: "2026-04-10T09:30:00.000Z",
+  },
+  {
+    _id: "task_5002",
+    title: "Prepare quotation draft",
+    description: "Draft quotation for Analytics Pro plan.",
+    lead: "lead_1003",
+    assignedTo: "user_sys_1",
+    dueDate: "2026-04-22T00:00:00.000Z",
+    taskStages: "In Progress",
+    priority: "Medium",
+    createdAt: "2026-04-11T11:00:00.000Z",
+    updatedAt: "2026-04-12T08:15:00.000Z",
+  },
+  {
+    _id: "task_5003",
+    title: "Follow-up email",
+    description: "Send follow-up after meeting.",
+    lead: "lead_1002",
+    assignedTo: "user_sys_3",
+    dueDate: "2026-04-21T00:00:00.000Z",
+    taskStages: "Done",
+    priority: "Low",
+    createdAt: "2026-04-05T10:10:00.000Z",
+    updatedAt: "2026-04-06T10:10:00.000Z",
+  },
+];

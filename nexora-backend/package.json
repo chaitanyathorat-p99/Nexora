@@ -1,0 +1,67 @@
+{
+  "name": "nexora-backend",
+  "version": "1.0.0",
+  "description": "Nexora Backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "chatbot": "../.venv/Scripts/uvicorn api:app --app-dir chatbot --host 0.0.0.0 --port 8001",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:verbose": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --verbose",
+    "test:meeting": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/meeting.test.js",
+    "test:auth": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/auth.test.js",
+    "test:lead": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/lead.test.js",
+    "test:task": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/task.test.js",
+    "test:deal": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/deal.test.js",
+    "test:product": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/product.test.js",
+    "test:ticket": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/ticket.test.js",
+    "test:call": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/call.test.js",
+    "test:user": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand tests/user.test.js"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {},
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diksharajpurohit-p99/nexora-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/diksharajpurohit-p99/nexora-backend/issues"
+  },
+  "homepage": "https://github.com/diksharajpurohit-p99/nexora-backend#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.2.0",
+    "mongoose": "^8.0.0",
+    "multer": "^2.1.1",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.3.0",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  }
+}

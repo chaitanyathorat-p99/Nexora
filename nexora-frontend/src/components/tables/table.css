@@ -1,0 +1,101 @@
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* track  */
+
+::-webkit-scrollbar-track {
+  background: #e0e0e0;
+}
+
+
+/* handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* handle on hover */
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.edit-button {
+  background-color: var(--blue);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s ease-in;
+}
+
+.edit-button:hover {
+  background-color: var(--blue);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.delete-button {
+  background-color: var(--blue);
+  color: red;
+  border: 1px solid red;
+  padding: 7px;
+  border-radius: 6px;
+  transition: all .2s ease-in;
+}
+
+.delete-button:hover {
+  background-color: var(--blue);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.ant-table-wrapper .ant-table-thead>tr>th {
+  color: rgba(77, 74, 74, 0.88);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 14px;
+  width: 100%;
+}
+
+.ant-table-wrapper .ant-table-tbody>tr>td {
+  border-bottom: 1px solid #e3e8ef;
+
+}
+
+.ant-table-tbody>tr>td {
+  color: #75869c;
+  /* Change to your desired color */
+}
+
+.ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>td {
+  padding: 5px 8px;
+}
+
+/* .ant-table-wrapper .ant-table{
+}
+:where(.css-dev-only-do-not-override-3rel02).ant-table-wrapper .ant-table {
+  color:"#75869c";
+}*/
+.headerColor,
+.colorText {
+  color: "#fff";
+}
+
+.customTooltip .ant-tooltip-inner {
+  background-color: #424141;
+  /* Change to your desired background color */
+  color: #ffffff;
+  /* Change to your desired text color */
+  font-size: 0.8rem;
+  /* Change to your desired font size */
+  padding: 5px;
+  /* Change to your desired padding */
+  letter-spacing: .3px;
+}
+
+.customTooltip .ant-tooltip-arrow-content {
+  background-color: #333333;
+  /* Change arrow color to match tooltip background */
+}

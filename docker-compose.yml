@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ./nexora-backend
+      dockerfile: Dockerfile
+    container_name: nexora-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./nexora-backend/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+    depends_on:
+      chatbot:
+        condition: service_healthy
+    restart: unless-stopped
+
+  chatbot:
+    build:
+      context: ./nexora-backend/chatbot
+      dockerfile: Dockerfile
+    container_name: nexora-chatbot
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./nexora-backend/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./nexora-frontend
+      dockerfile: Dockerfile
+    container_name: nexora-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - chatbot
+    restart: unless-stopped

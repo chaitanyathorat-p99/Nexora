@@ -1,0 +1,130 @@
+.crm-overview-container {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-actions button {
+  margin-right: 8px;
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.header-actions button:last-child {
+  margin-right: 0;
+}
+
+.score-section {
+  margin-top: 10px;
+}
+
+.score-section span {
+  margin-right: 20px;
+}
+
+.overview {
+  margin-top: 20px;
+}
+
+.lifecycle-stage {
+  margin-bottom: 20px;
+}
+
+.status {
+  display: flex;
+}
+
+.status-stage {
+  margin-right: 8px;
+  padding: 4px 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.details div {
+  flex: 1;
+}
+
+.details span {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.notes {
+  margin-bottom: 20px;
+}
+
+.note {
+  margin-bottom: 10px;
+}
+
+.note span {
+  display: block;
+}
+
+.actions {
+  text-align: center;
+}
+
+.actions button {
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit_visible_button {
+  display: flex;
+  cursor: pointer;
+  justify-content: space-between;
+
+
+}
+
+/* 
+.edit_visible_button span svg {
+  display: none;
+
+}
+
+.edit_visible_button :hover + span svg {
+  display: block;
+
+} */
+
+
+
+/* .custom-textarea-notes {
+    border: none;
+    border-radius: 2px;
+    transition: border-color 0.3s;
+    border: none!important;
+
+  }
+  
+  .custom-textarea-notes:focus {
+    box-shadow: none !important;
+    outline: none;
+    border: none!important;
+  }
+   */

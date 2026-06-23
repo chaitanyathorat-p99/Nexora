@@ -1,0 +1,5 @@
+__pycache__
+.venv
+extracted_images
+*.pyc
+.env

@@ -1,0 +1,19 @@
+.ant-card .ant-card-body {
+    padding: 5px;
+    border-radius: 0 0 8px 8px;
+}
+
+.ant-card .ant-card-head {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 50px;
+    /* margin-bottom: -1px; */
+    padding: 0 24px;
+    color: rgba(0, 0, 0, 0.88);
+    font-weight: 600;
+    font-size: 16px;
+    background: transparent;
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 8px 8px 0 0;
+}
