@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-
 jobs:
   # ── Job 1: Build & push all Docker images ──────────────────
   build:
@@ -41,35 +38,26 @@ jobs:
             frontend:
               - 'nexora-frontend/**'
 
-      # Backend — only builds if nexora-backend files changed
+      # Build backend image using docker CLI directly — avoids secret interpolation issues
       - name: Build & push backend image
         if: steps.changes.outputs.backend == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./nexora-backend
-          file: ./nexora-backend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest -f ./nexora-backend/Dockerfile ./nexora-backend
+          docker push ${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest
 
-      # Chatbot — only builds if chatbot files changed
+      # Build chatbot image
       - name: Build & push chatbot image
         if: steps.changes.outputs.chatbot == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./nexora-backend/chatbot
-          file: ./nexora-backend/chatbot/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest -f ./nexora-backend/chatbot/Dockerfile ./nexora-backend/chatbot
+          docker push ${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest
 
-      # Frontend — only builds if nexora-frontend files changed
+      # Build frontend image
       - name: Build & push frontend image
         if: steps.changes.outputs.frontend == 'true'
-        uses: docker/build-push-action@v6
-        with:
-          context: ./nexora-frontend
-          file: ./nexora-frontend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest -f ./nexora-frontend/Dockerfile ./nexora-frontend
+          docker push ${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest
 
   # ── Job 2: Deploy to EC2 (only runs after build succeeds) ──
   deploy:
