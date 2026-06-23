@@ -44,7 +44,7 @@ jobs:
       # Backend — only builds if nexora-backend files changed
       - name: Build & push backend image
         if: steps.changes.outputs.backend == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./nexora-backend
           file: ./nexora-backend/Dockerfile
@@ -54,7 +54,7 @@ jobs:
       # Chatbot — only builds if chatbot files changed
       - name: Build & push chatbot image
         if: steps.changes.outputs.chatbot == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./nexora-backend/chatbot
           file: ./nexora-backend/chatbot/Dockerfile
@@ -64,7 +64,7 @@ jobs:
       # Frontend — only builds if nexora-frontend files changed
       - name: Build & push frontend image
         if: steps.changes.outputs.frontend == 'true'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./nexora-frontend
           file: ./nexora-frontend/Dockerfile
