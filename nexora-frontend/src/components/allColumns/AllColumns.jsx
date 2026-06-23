@@ -4,7 +4,6 @@ import { PlusIcon } from "lucide-react";
 import { BiRegistered } from "react-icons/bi";
 import { checkAccess, hasFeature } from "../../atoms/static";
 import moment from "moment";
-
 const isSuperAdminUser = (user) => {
   const roleName = String(user?.role?.name || "").toUpperCase().replace(/\s+/g, "_");
   const roleId = String(user?.role?._id || user?.role || "");
