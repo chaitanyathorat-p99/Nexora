@@ -1,0 +1,115 @@
+name: Build & Deploy Nexora
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ── Job 1: Build & push all Docker images ──────────────────
+  build:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Detect which parts of the codebase changed
+      - name: Detect changed paths
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'nexora-backend/**'
+              - '!nexora-backend/chatbot/**'
+            chatbot:
+              - 'nexora-backend/chatbot/**'
+            frontend:
+              - 'nexora-frontend/**'
+
+      # Backend — only builds if nexora-backend files changed
+      - name: Build & push backend image
+        if: steps.changes.outputs.backend == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nexora-backend
+          dockerfile: ./nexora-backend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-backend:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-backend:cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-backend:cache,mode=max
+
+      # Chatbot — only builds if chatbot files changed
+      - name: Build & push chatbot image
+        if: steps.changes.outputs.chatbot == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nexora-backend/chatbot
+          dockerfile: ./nexora-backend/chatbot/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-chatbot:cache,mode=max
+
+      # Frontend — only builds if nexora-frontend files changed
+      - name: Build & push frontend image
+        if: steps.changes.outputs.frontend == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nexora-frontend
+          dockerfile: ./nexora-frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/nexora-frontend:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-frontend:cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/nexora-frontend:cache,mode=max
+
+  # ── Job 2: Deploy to EC2 (only runs after build succeeds) ──
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: SSH into EC2 & deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/nexora
+
+            # Pull latest images for all services
+            docker compose pull
+
+            # Restart only containers whose image changed, zero downtime
+            docker compose up -d --no-deps --force-recreate backend chatbot frontend
+
+            # Clean up old dangling images to save disk space
+            docker image prune -f
+
+      - name: Verify containers are running
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "=== Running containers ==="
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+            echo "=== Health checks ==="
+            curl -sf http://localhost:8000 && echo "✅ Backend OK" || echo "❌ Backend FAILED"
+            curl -sf http://localhost:8001/health && echo "✅ Chatbot OK" || echo "❌ Chatbot FAILED"
+            curl -sf http://localhost:80 && echo "✅ Frontend OK" || echo "❌ Frontend FAILED"
